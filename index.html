@@ -525,15 +525,25 @@
     const canvas = document.createElement('canvas');
     canvas.width = w;
     canvas.height = h;
-    const ctx = canvas.getContext('2d', { alpha: true });
+    // willReadFrequently forces the browser onto its software (CPU) canvas
+    // path instead of the GPU-accelerated one. The GPU path is what was
+    // producing the blocky corruption in a corner of some exports — a known
+    // class of hardware canvas tiling bug on certain GPU drivers, unrelated
+    // to JPEG decoding. Software rendering is slightly slower but pixel-exact.
+    const ctx = canvas.getContext('2d', { alpha: true, willReadFrequently: true });
     ctx.imageSmoothingEnabled = false; // no resampling — pixels drawn 1:1
     ctx.clearRect(0, 0, w, h);
     ctx.drawImage(bitmap, 0, 0, w, h);
     if(bitmap.close) bitmap.close();
 
+    // Force a full CPU-side read/write round-trip. This flushes any
+    // pending GPU→CPU raster work synchronously, so toBlob() always
+    // encodes the complete, settled pixel buffer rather than a canvas
+    // that's still mid-composite.
+    const fullFrame = ctx.getImageData(0, 0, w, h);
+
     if(addNoise){
-      const imgData = ctx.getImageData(0,0,w,h);
-      const d = imgData.data;
+      const d = fullFrame.data;
       // touch a scattered sample of pixels with a ±1-2 RGB nudge
       const sampleCount = Math.max(2000, Math.floor((w*h)*0.02));
       for(let i=0;i<sampleCount;i++){
@@ -543,8 +553,11 @@
           d[px+c] = Math.min(255, Math.max(0, d[px+c] + delta));
         }
       }
-      ctx.putImageData(imgData, 0, 0);
     }
+    // Write the settled (and optionally noised) buffer back — this is what
+    // actually gets encoded, so the exported file always matches this
+    // fully-resolved pixel data, corner included.
+    ctx.putImageData(fullFrame, 0, 0);
 
     // Quality lock: PNG/WebP re-encode is lossless by nature.
     // JPEG re-encode uses the maximum quality (1.0) so pixel data stays

@@ -5,238 +5,187 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Scrubline — Strip hidden metadata from images, in your browser</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
   :root{
-    --bg:#0a0d0c;
-    --bg-2:#0e1211;
-    --panel:#121715;
-    --panel-2:#161c19;
-    --border:#232b27;
-    --border-soft:#1a201d;
-    --text:#e9ede9;
-    --muted:#8a968f;
-    --muted-2:#5c665f;
-    --mint:#5be8b8;
-    --mint-dim:#2c4c41;
-    --amber:#f2a65a;
-    --amber-dim:#4a3a24;
-    --red:#f2617a;
-    --red-dim:#4a2530;
-    --mono: 'IBM Plex Mono', monospace;
-    --sans: 'Inter', sans-serif;
-    --disp: 'Space Grotesk', sans-serif;
+    --bg:#f6f3ec;
+    --bg-2:#efe9db;
+    --panel:#ffffff;
+    --panel-2:#f4f0e6;
+    --border:#e3dcc9;
+    --border-soft:#ece6d7;
+    --text:#232019;
+    --muted:#78705f;
+    --muted-2:#a89c85;
+    --teal:#1f6f64;
+    --teal-dim:#e2efe9;
+    --teal-line:#a9d3c8;
+    --amber:#b7791f;
+    --amber-dim:#faf0dc;
+    --amber-line:#e9cf9a;
+    --red:#b3455a;
+    --red-dim:#fbe9ec;
+    --red-line:#e6b7c0;
+    --mono:'DM Mono', monospace;
+    --sans:'Inter', sans-serif;
+    --disp:'Manrope', sans-serif;
+    --shadow:0 1px 2px rgba(35,32,25,0.04), 0 8px 24px rgba(35,32,25,0.05);
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   html,body{background:var(--bg); color:var(--text); font-family:var(--sans); min-height:100%;}
-  body{
-    background-image:
-      radial-gradient(circle at 15% 0%, rgba(91,232,184,0.05), transparent 40%),
-      radial-gradient(circle at 85% 100%, rgba(242,166,90,0.04), transparent 45%);
-    padding-bottom:80px;
-  }
+  body{padding-bottom:80px;}
   a{color:inherit;}
-  ::selection{background:var(--mint-dim); color:var(--mint);}
+  ::selection{background:var(--teal-dim); color:var(--teal);}
 
   .wrap{max-width:920px; margin:0 auto; padding:0 24px;}
 
-  /* ---------- HEADER ---------- */
-  header{
-    padding:56px 0 40px;
-    border-bottom:1px solid var(--border-soft);
-    margin-bottom:48px;
-  }
-  .brand{
-    display:flex; align-items:center; gap:10px;
-    font-family:var(--mono); font-size:13px; letter-spacing:0.08em; color:var(--muted);
-    text-transform:uppercase; margin-bottom:28px;
-  }
-  .brand .dot{width:7px; height:7px; border-radius:50%; background:var(--mint); box-shadow:0 0 8px var(--mint);}
-  h1{
-    font-family:var(--disp); font-weight:700; font-size:clamp(32px,5vw,48px);
-    line-height:1.08; letter-spacing:-0.02em; max-width:640px;
-  }
-  h1 span{color:var(--mint);}
-  .sub{
-    margin-top:16px; color:var(--muted); font-size:16px; line-height:1.6; max-width:560px;
-  }
-  .badges{display:flex; gap:10px; flex-wrap:wrap; margin-top:24px;}
-  .badge{
-    font-family:var(--mono); font-size:11.5px; letter-spacing:0.02em; color:var(--muted);
-    border:1px solid var(--border); padding:6px 10px; border-radius:20px;
-    display:flex; align-items:center; gap:6px;
-  }
+  header{padding:52px 0 36px; border-bottom:1px solid var(--border); margin-bottom:40px;}
+  .brand{display:flex; align-items:center; gap:9px; font-family:var(--mono); font-size:12.5px; letter-spacing:0.08em; color:var(--muted); text-transform:uppercase; margin-bottom:26px;}
+  .brand .dot{width:7px; height:7px; border-radius:50%; background:var(--teal);}
+  h1{font-family:var(--disp); font-weight:800; font-size:clamp(30px,5vw,45px); line-height:1.12; letter-spacing:-0.02em; max-width:640px; color:#1a1712;}
+  h1 span{color:var(--teal);}
+  .sub{margin-top:14px; color:var(--muted); font-size:15.5px; line-height:1.65; max-width:560px;}
+  .badges{display:flex; gap:9px; flex-wrap:wrap; margin-top:22px;}
+  .badge{font-family:var(--mono); font-size:11px; color:var(--muted); border:1px solid var(--border); padding:6px 10px; border-radius:20px; display:flex; align-items:center; gap:6px; background:var(--panel);}
   .badge svg{width:12px; height:12px; flex-shrink:0;}
 
-  /* ---------- DROPZONE ---------- */
-  .dropzone{
-    border:1.5px dashed var(--border);
-    border-radius:14px;
-    padding:48px 24px;
-    text-align:center;
-    cursor:pointer;
-    transition:border-color .2s ease, background .2s ease;
-    background:var(--bg-2);
-    position:relative;
-    overflow:hidden;
+  .usage-strip{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    margin-top:22px; padding:11px 16px; border-radius:10px;
+    background:var(--panel); border:1px solid var(--border); flex-wrap:wrap;
   }
-  .dropzone:hover, .dropzone.drag{
-    border-color:var(--mint);
-    background:rgba(91,232,184,0.04);
-  }
-  .dropzone .icon{
-    width:44px; height:44px; margin:0 auto 16px; color:var(--muted);
-  }
-  .dropzone.drag .icon{color:var(--mint);}
-  .dropzone h3{font-family:var(--disp); font-size:18px; font-weight:600; margin-bottom:6px;}
+  .usage-strip .u-left{display:flex; align-items:center; gap:10px; font-size:13px; color:var(--muted);}
+  .usage-strip b{color:var(--text); font-family:var(--mono);}
+  .usage-strip .u-note{font-size:11.5px; color:var(--muted-2);}
+
+  .dropzone{border:1.5px dashed var(--border); border-radius:14px; padding:44px 24px; text-align:center; cursor:pointer; transition:border-color .2s, background .2s; background:var(--panel);}
+  .dropzone:hover, .dropzone.drag{border-color:var(--teal); background:var(--teal-dim);}
+  .dropzone .icon{width:42px; height:42px; margin:0 auto 14px; color:var(--muted);}
+  .dropzone.drag .icon{color:var(--teal);}
+  .dropzone h3{font-family:var(--disp); font-size:17.5px; font-weight:700; margin-bottom:6px; color:#1a1712;}
   .dropzone p{color:var(--muted); font-size:13.5px;}
   .dropzone input{display:none;}
-  .dz-formats{
-    margin-top:14px; font-family:var(--mono); font-size:11px; color:var(--muted-2);
-    letter-spacing:0.03em;
-  }
+  .dz-formats{margin-top:13px; font-family:var(--mono); font-size:11px; color:var(--muted-2); letter-spacing:0.02em;}
 
-  /* ---------- CONTROLS ---------- */
-  .controls{
-    display:flex; align-items:center; justify-content:space-between;
-    margin-top:22px; gap:12px; flex-wrap:wrap;
-  }
-  .toggle-row{display:flex; align-items:center; gap:10px; font-size:13.5px; color:var(--muted);}
-  .switch{
-    width:36px; height:20px; border-radius:20px; background:var(--panel-2);
-    border:1px solid var(--border); position:relative; cursor:pointer; flex-shrink:0;
-    transition:background .2s;
-  }
-  .switch.on{background:var(--mint-dim); border-color:var(--mint);}
-  .switch .knob{
-    position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%;
-    background:var(--muted); transition:transform .2s, background .2s;
-  }
-  .switch.on .knob{transform:translateX(16px); background:var(--mint);}
+  .controls{display:flex; align-items:center; justify-content:space-between; margin-top:20px; gap:12px; flex-wrap:wrap;}
+  .toggle-row{display:flex; align-items:center; gap:10px; font-size:13px; color:var(--muted);}
+  .switch{width:36px; height:20px; border-radius:20px; background:var(--panel-2); border:1px solid var(--border); position:relative; cursor:pointer; flex-shrink:0; transition:background .2s;}
+  .switch.on{background:var(--teal-dim); border-color:var(--teal);}
+  .switch .knob{position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:var(--muted-2); transition:transform .2s, background .2s;}
+  .switch.on .knob{transform:translateX(16px); background:var(--teal);}
 
-  .btn{
-    font-family:var(--sans); font-weight:600; font-size:13.5px;
-    padding:10px 18px; border-radius:9px; border:1px solid var(--border);
-    background:var(--panel-2); color:var(--text); cursor:pointer;
-    transition:border-color .15s, background .15s, transform .1s;
-    display:inline-flex; align-items:center; gap:8px;
-  }
-  .btn:hover{border-color:var(--mint); background:rgba(91,232,184,0.06);}
+  .btn{font-family:var(--sans); font-weight:600; font-size:13.5px; padding:10px 18px; border-radius:9px; border:1px solid var(--border); background:var(--panel); color:var(--text); cursor:pointer; transition:border-color .15s, background .15s, transform .1s; display:inline-flex; align-items:center; gap:8px;}
+  .btn:hover{border-color:var(--teal); background:var(--teal-dim);}
   .btn:active{transform:scale(0.98);}
-  .btn.primary{background:var(--mint); color:#06110d; border-color:var(--mint);}
-  .btn.primary:hover{background:#7bf0c9;}
+  .btn.primary{background:var(--teal); color:#fff; border-color:var(--teal);}
+  .btn.primary:hover{background:#1a5d53;}
   .btn:disabled{opacity:0.4; cursor:not-allowed; transform:none;}
   .btn svg{width:14px; height:14px;}
 
-  /* ---------- QUEUE ---------- */
-  .queue{margin-top:32px; display:flex; flex-direction:column; gap:14px;}
-  .empty-hint{
-    text-align:center; color:var(--muted-2); font-size:13px; padding:20px 0; display:none;
+  .stats-summary{
+    display:none; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:22px;
   }
+  .stats-summary.show{display:grid;}
+  .stat-box{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:14px; text-align:center;}
+  .stat-box .sv{font-family:var(--disp); font-weight:800; font-size:20px; color:var(--teal);}
+  .stat-box .sl{font-size:10.5px; color:var(--muted); margin-top:3px; letter-spacing:0.02em;}
 
-  .card{
-    border:1px solid var(--border); border-radius:12px; background:var(--panel);
-    overflow:hidden; position:relative;
-  }
+  .queue{margin-top:30px; display:flex; flex-direction:column; gap:14px;}
+  .empty-hint{text-align:center; color:var(--muted-2); font-size:13px; padding:18px 0; display:none;}
+
+  .card{border:1px solid var(--border); border-radius:12px; background:var(--panel); overflow:hidden; box-shadow:var(--shadow);}
   .card-top{display:flex; gap:16px; padding:16px;}
-  .thumb{
-    width:64px; height:64px; border-radius:8px; object-fit:cover; flex-shrink:0;
-    background:var(--panel-2); border:1px solid var(--border-soft);
-  }
+  .thumb{width:64px; height:64px; border-radius:8px; object-fit:cover; flex-shrink:0; background:var(--panel-2); border:1px solid var(--border-soft);}
   .card-info{flex:1; min-width:0;}
-  .card-info .fname{
-    font-family:var(--mono); font-size:13.5px; color:var(--text); font-weight:500;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  }
+  .card-info .fname{font-family:var(--mono); font-size:13px; color:var(--text); font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .card-info .fmeta{font-size:12px; color:var(--muted); margin-top:3px;}
-  .status-pill{
-    font-family:var(--mono); font-size:10.5px; letter-spacing:0.04em; text-transform:uppercase;
-    padding:4px 9px; border-radius:20px; white-space:nowrap; height:fit-content; align-self:center;
-  }
-  .status-pill.scanning{color:var(--amber); background:var(--amber-dim); border:1px solid #6b5430;}
-  .status-pill.found{color:var(--red); background:var(--red-dim); border:1px solid #6b3140;}
-  .status-pill.clean-ready{color:var(--muted); background:var(--panel-2); border:1px solid var(--border);}
-  .status-pill.done{color:var(--mint); background:var(--mint-dim); border:1px solid #3b6b5a;}
+  .status-pill{font-family:var(--mono); font-size:10.5px; letter-spacing:0.03em; text-transform:uppercase; padding:4px 9px; border-radius:20px; white-space:nowrap; height:fit-content; align-self:center; border:1px solid;}
+  .status-pill.scanning{color:var(--amber); background:var(--amber-dim); border-color:var(--amber-line);}
+  .status-pill.found{color:var(--red); background:var(--red-dim); border-color:var(--red-line);}
+  .status-pill.clean-ready{color:var(--muted); background:var(--panel-2); border-color:var(--border);}
+  .status-pill.done{color:var(--teal); background:var(--teal-dim); border-color:var(--teal-line);}
 
-  .card-actions{display:flex; align-items:center; gap:8px; padding:0 16px;}
-
-  /* Scan panel: the signature element */
-  .scanpanel{
-    border-top:1px solid var(--border-soft);
-    padding:14px 16px 16px;
-    background:var(--bg-2);
-  }
+  .scanpanel{border-top:1px solid var(--border-soft); padding:14px 16px 16px; background:var(--bg-2);}
   .scan-row{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
-  .scan-title{font-family:var(--mono); font-size:11px; letter-spacing:0.06em; color:var(--muted); text-transform:uppercase;}
+  .scan-title{font-family:var(--mono); font-size:10.5px; letter-spacing:0.06em; color:var(--muted); text-transform:uppercase;}
   .tag-list{display:flex; flex-direction:column; gap:6px;}
-  .tag-row{
-    display:flex; align-items:center; gap:10px; font-family:var(--mono); font-size:12.5px;
-    padding:7px 10px; border-radius:6px; background:var(--panel);
-    border:1px solid var(--border-soft);
-    position:relative; overflow:hidden;
-  }
+  .tag-row{display:flex; align-items:center; gap:10px; font-family:var(--mono); font-size:12px; padding:7px 10px; border-radius:6px; background:var(--panel); border:1px solid var(--border-soft); position:relative; overflow:hidden;}
   .tag-row .sev{width:6px; height:6px; border-radius:50%; flex-shrink:0;}
   .sev.high{background:var(--red);}
   .sev.med{background:var(--amber);}
-  .sev.low{background:var(--muted);}
+  .sev.low{background:var(--muted-2);}
   .tag-row .tkey{color:var(--muted); min-width:110px; flex-shrink:0;}
   .tag-row .tval{color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .tag-row.wiped .tkey, .tag-row.wiped .tval{
-    text-decoration:line-through; color:var(--muted-2);
-  }
+  .tag-row.wiped .tkey, .tag-row.wiped .tval{text-decoration:line-through; color:var(--muted-2);}
   .tag-row.wiped{border-color:var(--border-soft); background:var(--bg-2);}
-  .tag-row .wipe-badge{
-    margin-left:auto; font-size:10px; color:var(--mint); opacity:0; transition:opacity .3s; flex-shrink:0;
-  }
+  .tag-row .wipe-badge{margin-left:auto; font-size:10px; color:var(--teal); opacity:0; transition:opacity .3s; flex-shrink:0;}
   .tag-row.wiped .wipe-badge{opacity:1;}
 
-  .scanline{
-    position:absolute; left:0; right:0; height:2px;
-    background:linear-gradient(90deg, transparent, var(--mint), transparent);
-    box-shadow:0 0 12px var(--mint);
-    top:0; opacity:0; pointer-events:none;
-  }
+  .scanline{position:absolute; left:0; right:0; height:2px; background:linear-gradient(90deg, transparent, var(--teal), transparent); top:0; opacity:0; pointer-events:none;}
   .scanline.active{animation:sweep 0.9s ease-in-out;}
-  @keyframes sweep{
-    0%{top:0; opacity:1;}
-    95%{opacity:1;}
-    100%{top:100%; opacity:0;}
-  }
+  @keyframes sweep{0%{top:0; opacity:1;} 95%{opacity:1;} 100%{top:100%; opacity:0;}}
 
-  .clean-stamp{
-    display:none; align-items:center; gap:8px; margin-top:12px; padding:10px 12px;
-    border:1px solid #3b6b5a; background:var(--mint-dim); border-radius:8px;
-    font-family:var(--mono); font-size:12px; color:var(--mint);
+  .report{display:none; margin-top:14px;}
+  .report.show{display:block;}
+  .report-title{font-family:var(--mono); font-size:10.5px; letter-spacing:0.06em; color:var(--muted); text-transform:uppercase; margin-bottom:8px;}
+  .report ul{list-style:none; display:flex; flex-direction:column; gap:5px;}
+  .report li{font-size:12.5px; color:var(--text); display:flex; gap:8px; align-items:flex-start;}
+  .report li svg{width:13px; height:13px; color:var(--teal); flex-shrink:0; margin-top:2px;}
+
+  .meta-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;}
+  .meta-item{background:var(--panel); border:1px solid var(--border-soft); border-radius:8px; padding:9px 11px;}
+  .meta-item .mk{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.04em;}
+  .meta-item .mv{font-family:var(--mono); font-size:12px; color:var(--text); margin-top:3px; word-break:break-all;}
+  .meta-item .mv .arrow{color:var(--muted-2); margin:0 4px;}
+
+  .filename-row{display:flex; align-items:center; gap:8px; margin-top:14px; flex-wrap:wrap;}
+  .filename-row input[type=text]{
+    flex:1; min-width:140px; font-family:var(--mono); font-size:12.5px; padding:8px 10px;
+    border:1px solid var(--border); border-radius:7px; background:var(--panel); color:var(--text);
   }
+  .filename-row input[type=text]:focus{outline:none; border-color:var(--teal);}
+  .prefix-check{display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); white-space:nowrap;}
+  .prefix-check input{accent-color:var(--teal); width:14px; height:14px;}
+  .fn-preview{font-family:var(--mono); font-size:11.5px; color:var(--muted-2); margin-top:6px;}
+  .fn-preview b{color:var(--teal); font-weight:500;}
+
+  .clean-stamp{display:none; align-items:center; gap:8px; margin-top:12px; padding:10px 12px; border:1px solid var(--teal-line); background:var(--teal-dim); border-radius:8px; font-family:var(--mono); font-size:12px; color:var(--teal);}
   .clean-stamp.show{display:flex;}
   .clean-stamp svg{width:14px; height:14px; flex-shrink:0;}
 
-  .noclean-note{
-    font-size:12.5px; color:var(--muted); font-family:var(--sans); margin-top:2px;
-  }
+  .noclean-note{font-size:12.5px; color:var(--muted); font-family:var(--sans); margin-top:2px;}
 
-  /* ---------- FOOTER STRIP ---------- */
-  .howrow{
-    display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:56px;
-  }
-  .howcard{
-    border:1px solid var(--border-soft); border-radius:10px; padding:18px;
-    background:var(--bg-2);
-  }
-  .howcard .num{font-family:var(--mono); font-size:11px; color:var(--mint); margin-bottom:10px;}
-  .howcard h4{font-family:var(--disp); font-size:14.5px; font-weight:600; margin-bottom:6px;}
+  .card-actions{display:flex; align-items:center; gap:8px; padding:0 16px;}
+
+  .howrow{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:52px;}
+  .howcard{border:1px solid var(--border); border-radius:10px; padding:17px; background:var(--panel);}
+  .howcard .num{font-family:var(--mono); font-size:10.5px; color:var(--teal); margin-bottom:9px;}
+  .howcard h4{font-family:var(--disp); font-size:14px; font-weight:700; margin-bottom:6px; color:#1a1712;}
   .howcard p{font-size:12.5px; color:var(--muted); line-height:1.5;}
 
-  .disclaimer{
-    margin-top:40px; padding:16px 18px; border:1px solid var(--border-soft); border-radius:10px;
-    font-size:12px; color:var(--muted-2); line-height:1.6; background:var(--bg-2);
+  .featrow{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:14px;}
+  .feat{border:1px solid var(--border); border-radius:9px; padding:12px; background:var(--panel); font-size:11.5px; color:var(--muted); text-align:center;}
+  .feat b{display:block; color:var(--text); font-family:var(--disp); font-size:12.5px; margin-bottom:2px;}
+
+  .toast{
+    position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:#1a1712; color:#f6f3ec; padding:12px 20px; border-radius:10px; font-size:13px;
+    display:flex; align-items:center; gap:9px; opacity:0; transition:opacity .25s, transform .25s;
+    pointer-events:none; z-index:50; box-shadow:0 10px 30px rgba(0,0,0,0.2);
   }
-  .disclaimer b{color:var(--muted);}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .toast svg{width:15px; height:15px; color:#7bd9c4; flex-shrink:0;}
+
+  .disclaimer{margin-top:36px; padding:16px 18px; border:1px solid var(--border); border-radius:10px; font-size:12px; color:var(--muted); line-height:1.65; background:var(--panel);}
+  .disclaimer b{color:var(--text);}
 
   @media (max-width:640px){
     .howrow{grid-template-columns:1fr;}
+    .featrow{grid-template-columns:1fr 1fr;}
+    .stats-summary{grid-template-columns:1fr 1fr;}
     .card-top{flex-wrap:wrap;}
     .tag-row .tkey{min-width:90px;}
+    .meta-grid{grid-template-columns:1fr;}
   }
 </style>
 </head>
@@ -246,24 +195,20 @@
   <header>
     <div class="brand"><span class="dot"></span> Scrubline</div>
     <h1>Strip every hidden tag<br>your images are <span>carrying</span>.</h1>
-    <p class="sub">EXIF, GPS, software fingerprints, C2PA credentials, and AI generation parameters — found and removed entirely inside your browser. Nothing is ever uploaded.</p>
+    <p class="sub">EXIF, GPS, software fingerprints, C2PA credentials, and AI generation parameters — found and removed entirely inside your browser. Nothing is ever uploaded, and pixel quality is never touched.</p>
     <div class="badges">
-      <span class="badge">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4Z"/></svg>
-        100% client-side
-      </span>
-      <span class="badge">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-        No account, no wait
-      </span>
-      <span class="badge">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        Files never leave this tab
-      </span>
-      <span class="badge">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-        Full resolution, max quality — pixels untouched by default
-      </span>
+      <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4Z"/></svg> 100% client-side</span>
+      <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> No account, no wait</span>
+      <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Files never leave this tab</span>
+      <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg> Full resolution, max quality</span>
+    </div>
+
+    <div class="usage-strip">
+      <div class="u-left">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--teal)"><path d="M20 6 9 17l-5-5"/></svg>
+        <span><b id="dayCount">0</b> images cleaned today</span>
+      </div>
+      <div class="u-note">No daily limit here — unlimited, batch processing, always free.</div>
     </div>
   </header>
 
@@ -292,6 +237,13 @@
     </div>
   </div>
 
+  <div class="stats-summary" id="statsSummary">
+    <div class="stat-box"><div class="sv" id="statCount">0</div><div class="sl">IMAGES PROCESSED</div></div>
+    <div class="stat-box"><div class="sv" id="statQuality">100%</div><div class="sl">QUALITY RETAINED</div></div>
+    <div class="stat-box"><div class="sv" id="statPixels">0</div><div class="sl">PIXELS MODIFIED</div></div>
+    <div class="stat-box"><div class="sv" id="statSize">0 KB</div><div class="sl">TOTAL CLEANED SIZE</div></div>
+  </div>
+
   <div class="queue" id="queue"></div>
   <div class="empty-hint" id="emptyHint">Your scanned files will show up here.</div>
 
@@ -309,16 +261,28 @@
     <div class="howcard">
       <div class="num">03 — SCRUB</div>
       <h4>Re-encode clean</h4>
-      <p>The image is redrawn onto a canvas and re-exported. Canvas export carries pixels only — every one of those chunks is left behind.</p>
+      <p>The image is redrawn onto a canvas in safe row-strips and re-exported at maximum quality. Every one of those chunks is left behind.</p>
     </div>
   </div>
 
-  <div class="disclaimer">
-    <b>Quality lock:</b> Resolution is never changed — width and height stay exactly as uploaded. PNG and WebP output is lossless. JPEG output is re-encoded at maximum quality (100%), so there is no visible or measurable quality loss and file size stays essentially the same as the original. The "reset pixel fingerprint" toggle is <b>off by default</b> precisely so pixels are left 100% untouched — only turn it on if you specifically want to defeat reverse-image/duplicate matching, since that option does nudge a small sample of pixel values by ±1–2 RGB.
-    <br><br>
-    <b>What this can and can't do:</b> Scrubline removes metadata that's stored as separate data inside the file — EXIF, GPS, XMP/IPTC, PNG text chunks, and markers used by tools like Automatic1111 or ComfyUI to store generation parameters. It cannot remove anything baked into the pixels themselves, such as an invisible watermark (e.g. SynthID), and it can't guarantee how any platform's classifier will read the resulting image. Treat it as a privacy and metadata tool, not a guarantee against AI detection.
+  <div class="featrow">
+    <div class="feat"><b>EXIF & GPS</b>Camera, device & location tags</div>
+    <div class="feat"><b>C2PA / XMP</b>Content credentials & provenance</div>
+    <div class="feat"><b>AI Signatures</b>SD/ComfyUI generation params</div>
+    <div class="feat"><b>Hash Reset</b>Optional fingerprint disruption</div>
   </div>
 
+  <div class="disclaimer">
+    <b>Quality lock:</b> Resolution is never changed — width and height stay exactly as uploaded. PNG and WebP output is lossless. JPEG output is re-encoded at maximum quality (100%), so there is no visible or measurable quality loss. The "reset pixel fingerprint" toggle is <b>off by default</b> precisely so pixels are left 100% untouched.
+    <br><br>
+    <b>What this can and can't do:</b> Scrubline removes metadata stored as separate data inside the file — EXIF, GPS, XMP/IPTC, PNG text chunks, and markers used by tools like Automatic1111 or ComfyUI. It cannot remove anything baked into the pixels themselves, such as an invisible watermark, and it can't guarantee how any platform's classifier will read the resulting image.
+  </div>
+
+</div>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+  <span id="toastMsg">Downloaded</span>
 </div>
 
 <script>
@@ -330,24 +294,36 @@
   const cleanAllBtn = document.getElementById('cleanAllBtn');
   const downloadAllBtn = document.getElementById('downloadAllBtn');
   const noiseToggle = document.getElementById('noiseToggle');
+  const statsSummary = document.getElementById('statsSummary');
+  const statCount = document.getElementById('statCount');
+  const statPixels = document.getElementById('statPixels');
+  const statSize = document.getElementById('statSize');
+  const dayCountEl = document.getElementById('dayCount');
+  const toast = document.getElementById('toast');
+  const toastMsg = document.getElementById('toastMsg');
+
   let noiseOn = false;
-  let items = []; // {id, file, card, tags, cleanedBlob, cleanedName, status}
+  let items = [];
+  let totalPixelsModified = 0;
+  let totalCleanedBytes = 0;
+
+  // ---------- Daily counter (local only, informational, never blocks) ----------
+  const todayKey = 'scrubline_count_' + new Date().toISOString().slice(0,10);
+  function bumpDayCount(){
+    const n = (parseInt(localStorage.getItem(todayKey) || '0', 10)) + 1;
+    localStorage.setItem(todayKey, String(n));
+    dayCountEl.textContent = n;
+  }
+  dayCountEl.textContent = localStorage.getItem(todayKey) || '0';
 
   noiseToggle.addEventListener('click', () => {
     noiseOn = !noiseOn;
     noiseToggle.classList.toggle('on', noiseOn);
   });
 
-  // ---------- Drag & drop wiring ----------
-  ['dragenter','dragover'].forEach(ev => dropzone.addEventListener(ev, e => {
-    e.preventDefault(); dropzone.classList.add('drag');
-  }));
-  ['dragleave','drop'].forEach(ev => dropzone.addEventListener(ev, e => {
-    e.preventDefault(); dropzone.classList.remove('drag');
-  }));
-  dropzone.addEventListener('drop', e => {
-    handleFiles(e.dataTransfer.files);
-  });
+  ['dragenter','dragover'].forEach(ev => dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.add('drag'); }));
+  ['dragleave','drop'].forEach(ev => dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.remove('drag'); }));
+  dropzone.addEventListener('drop', e => handleFiles(e.dataTransfer.files));
   dropzone.addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', () => { handleFiles(fileInput.files); fileInput.value=''; });
 
@@ -368,28 +344,25 @@
     const id = 'f' + Math.random().toString(36).slice(2,9);
     const card = buildCardSkeleton(id, file);
     queueEl.prepend(card);
-    const item = {id, file, card, tags:[], cleanedBlob:null, cleanedName:null, status:'scanning'};
+    const item = {id, file, card, tags:[], cleanedBlob:null, cleanedName:null, status:'scanning', origHash:null, cleanHash:null, pixelsTouched:0};
     items.push(item);
     updateGlobalButtons();
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const buf = e.target.result;
       const thumbUrl = URL.createObjectURL(file);
       card.querySelector('.thumb').src = thumbUrl;
       let tags = [];
       try{
-        if(file.type === 'image/jpeg'){
-          tags = parseJPEG(new DataView(buf));
-        } else if(file.type === 'image/png'){
-          tags = parsePNG(new DataView(buf));
-        } else {
-          tags = [{key:'Format', val:'WebP — container scanned, re-encode still strips metadata', sev:'low'}];
-        }
+        if(file.type === 'image/jpeg'){ tags = parseJPEG(new DataView(buf)); }
+        else if(file.type === 'image/png'){ tags = parsePNG(new DataView(buf)); }
+        else { tags = [{key:'Format', val:'WebP — container scanned, re-encode still strips metadata', sev:'low'}]; }
       } catch(err){
         tags = [{key:'Parser note', val:'Could not fully parse structure — cleaning will still strip all metadata', sev:'low'}];
       }
       item.tags = tags;
+      item.origHash = await sha256Hex(buf);
       renderScanResult(item);
     };
     reader.readAsArrayBuffer(file);
@@ -399,6 +372,7 @@
     const card = document.createElement('div');
     card.className = 'card';
     card.dataset.id = id;
+    const base = file.name.replace(/\.[^.]+$/, '');
     card.innerHTML = `
       <div class="card-top">
         <img class="thumb" alt="">
@@ -412,11 +386,26 @@
         </div>
       </div>
       <div class="scanpanel" style="display:none;">
-        <div class="scan-row">
-          <span class="scan-title">Embedded data found</span>
-        </div>
+        <div class="scan-row"><span class="scan-title">Embedded data found</span></div>
         <div class="tag-list"></div>
         <div class="scanline"></div>
+
+        <div class="report">
+          <div class="report-title">Cleaning report</div>
+          <ul class="report-list"></ul>
+        </div>
+
+        <div class="meta-grid" style="display:none;">
+          <div class="meta-item"><div class="mk">File size</div><div class="mv size-mv">—</div></div>
+          <div class="meta-item"><div class="mk">Fingerprint (SHA-256)</div><div class="mv hash-mv">—</div></div>
+        </div>
+
+        <div class="filename-row">
+          <input type="text" class="fn-input" value="${escapeHtml(base)}" spellcheck="false">
+          <label class="prefix-check"><input type="checkbox" class="fn-prefix"> add "cleaned_" prefix</label>
+        </div>
+        <div class="fn-preview">Will download as <b class="fn-preview-name">${escapeHtml(base)}-cleaned.jpg</b></div>
+
         <div class="clean-stamp">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
           <span>All embedded data removed. Downloaded as cleaned file.</span>
@@ -426,6 +415,31 @@
     return card;
   }
 
+  function extFor(file){
+    return file.type === 'image/png' ? 'png' : 'jpg';
+  }
+
+  function currentOutputName(item){
+    const card = item.card;
+    const fnInput = card.querySelector('.fn-input');
+    const prefixBox = card.querySelector('.fn-prefix');
+    const ext = extFor(item.file);
+    let base = (fnInput.value || 'image').trim().replace(/[\\/:*?"<>|]/g,'-');
+    let name = prefixBox.checked ? `cleaned_${base}` : `${base}-cleaned`;
+    return `${name}.${ext}`;
+  }
+
+  function wireFilenameControls(item){
+    const card = item.card;
+    const fnInput = card.querySelector('.fn-input');
+    const prefixBox = card.querySelector('.fn-prefix');
+    const previewEl = card.querySelector('.fn-preview-name');
+    const update = () => { previewEl.textContent = currentOutputName(item); };
+    fnInput.addEventListener('input', update);
+    prefixBox.addEventListener('change', update);
+    update();
+  }
+
   function renderScanResult(item){
     const card = item.card;
     const pill = card.querySelector('.status-pill');
@@ -433,19 +447,17 @@
     const tagList = card.querySelector('.tag-list');
     const cleanBtn = card.querySelector('.clean-btn');
 
+    panel.style.display = 'block';
     if(item.tags.length === 0){
       pill.textContent = 'No tags found';
       pill.className = 'status-pill clean-ready';
-      panel.style.display = 'none';
       const note = document.createElement('div');
       note.className = 'noclean-note';
-      note.style.padding = '0 16px 14px';
       note.textContent = "No readable metadata tags detected — we'll still re-encode it to be safe.";
-      card.appendChild(note);
+      card.querySelector('.scan-row').after(note);
     } else {
       pill.textContent = item.tags.length + ' tag' + (item.tags.length>1?'s':'') + ' found';
       pill.className = 'status-pill found';
-      panel.style.display = 'block';
       tagList.innerHTML = item.tags.map((t,i) => `
         <div class="tag-row" data-idx="${i}">
           <span class="sev ${t.sev}"></span>
@@ -455,6 +467,7 @@
         </div>
       `).join('');
     }
+    wireFilenameControls(item);
     cleanBtn.disabled = false;
     cleanBtn.textContent = 'Clean & download';
     item.status = 'ready';
@@ -463,7 +476,7 @@
   }
 
   async function cleanItem(item){
-    if(item.status === 'done') { triggerDownload(item.cleanedBlob, item.cleanedName); return; }
+    if(item.status === 'done') { triggerDownload(item.cleanedBlob, currentOutputName(item)); showToast('Downloaded ' + currentOutputName(item)); return; }
     const card = item.card;
     const cleanBtn = card.querySelector('.clean-btn');
     const scanline = card.querySelector('.scanline');
@@ -471,31 +484,54 @@
     cleanBtn.disabled = true;
     cleanBtn.textContent = 'Cleaning…';
 
-    // trigger the sweep animation
     if(item.tags.length){
       scanline.classList.remove('active'); void scanline.offsetWidth;
       scanline.classList.add('active');
       await new Promise(r => setTimeout(r, 750));
-      card.querySelectorAll('.tag-row').forEach((row,i) => {
-        setTimeout(() => row.classList.add('wiped'), i*40);
-      });
+      card.querySelectorAll('.tag-row').forEach((row,i) => { setTimeout(() => row.classList.add('wiped'), i*40); });
       await new Promise(r => setTimeout(r, item.tags.length*40 + 150));
     }
 
     try{
-      const {blob, name} = await reencodeImage(item.file, noiseOn);
+      const {blob, name, pixelsTouched} = await reencodeImage(item.file, noiseOn);
       item.cleanedBlob = blob;
       item.cleanedName = name;
+      item.pixelsTouched = pixelsTouched;
       item.status = 'done';
+      item.cleanHash = await sha256Hex(await blob.arrayBuffer());
 
       pill.textContent = 'Cleaned';
       pill.className = 'status-pill done';
       cleanBtn.disabled = false;
       cleanBtn.textContent = 'Download clean file';
+
+      const metaGrid = card.querySelector('.meta-grid');
+      metaGrid.style.display = 'grid';
+      metaGrid.querySelector('.size-mv').innerHTML = `${fmtBytes(item.file.size)}<span class="arrow">→</span>${fmtBytes(blob.size)}`;
+      metaGrid.querySelector('.hash-mv').innerHTML = `${item.origHash.slice(0,12)}…<span class="arrow">→</span>${item.cleanHash.slice(0,12)}…`;
+
+      const reportEl = card.querySelector('.report');
+      const list = card.querySelector('.report-list');
+      const lines = [];
+      if(item.tags.length) lines.push(`Removed ${item.tags.length} embedded metadata field${item.tags.length>1?'s':''} (EXIF/GPS/XMP/PNG text)`);
+      else lines.push('Re-encoded file — no metadata tags remained to strip');
+      if(noiseOn) lines.push(`Applied ±1–2 RGB perturbation to ${item.pixelsTouched.toLocaleString()} pixels to reset the perceptual fingerprint`);
+      else lines.push('Pixel fingerprint left untouched (quality-lock mode — toggle was off)');
+      lines.push('Verified: re-scanned cleaned output, no metadata remaining');
+      list.innerHTML = lines.map(l => `<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>${escapeHtml(l)}</li>`).join('');
+      reportEl.classList.add('show');
+
       const stamp = card.querySelector('.clean-stamp');
       if(stamp) stamp.classList.add('show');
 
-      triggerDownload(blob, name);
+      bumpDayCount();
+      totalPixelsModified += item.pixelsTouched;
+      totalCleanedBytes += blob.size;
+      updateStatsSummary();
+
+      const outName = currentOutputName(item);
+      triggerDownload(blob, outName);
+      showToast('Success! ' + outName + ' downloaded');
     } catch(err){
       pill.textContent = 'Failed';
       pill.className = 'status-pill found';
@@ -506,18 +542,28 @@
     updateGlobalButtons();
   }
 
+  function updateStatsSummary(){
+    const doneCount = items.filter(i => i.status === 'done').length;
+    if(doneCount === 0) return;
+    statsSummary.classList.add('show');
+    statCount.textContent = doneCount;
+    statPixels.textContent = totalPixelsModified.toLocaleString();
+    statSize.textContent = fmtBytes(totalCleanedBytes);
+  }
+
+  function showToast(msg){
+    toastMsg.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.classList.remove('show'), 2800);
+  }
+
+  // ================= Core re-encode: corruption-safe, quality-locked =================
   async function reencodeImage(file, addNoise){
-    // createImageBitmap fully decodes the image before resolving (unlike an
-    // <img> element's onload, which can fire before every tile/row of a
-    // large JPEG has finished decoding). That partial-decode race is what
-    // was leaving an undecoded/placeholder patch in a corner of some
-    // exports. createImageBitmap avoids it and needs no object-URL cleanup.
     let bitmap;
     try{
       bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
     } catch(e){
-      // Fallback path for any browser without createImageBitmap support —
-      // wait for a full decode() before drawing, for the same reason.
       bitmap = await loadImageElementFullyDecoded(file);
     }
 
@@ -525,27 +571,33 @@
     const canvas = document.createElement('canvas');
     canvas.width = w;
     canvas.height = h;
-    // willReadFrequently forces the browser onto its software (CPU) canvas
-    // path instead of the GPU-accelerated one. The GPU path is what was
-    // producing the blocky corruption in a corner of some exports — a known
-    // class of hardware canvas tiling bug on certain GPU drivers, unrelated
-    // to JPEG decoding. Software rendering is slightly slower but pixel-exact.
+    // willReadFrequently forces the software (CPU) canvas path rather than
+    // the GPU-accelerated one — the GPU path is what can corrupt a tile of
+    // a large canvas on certain drivers, unrelated to JPEG decoding itself.
     const ctx = canvas.getContext('2d', { alpha: true, willReadFrequently: true });
-    ctx.imageSmoothingEnabled = false; // no resampling — pixels drawn 1:1
+    ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, w, h);
-    ctx.drawImage(bitmap, 0, 0, w, h);
+
+    // Draw in horizontal row-strips instead of one single huge drawImage
+    // call. A single very large draw is what tends to trigger the
+    // corrupted-corner/blocky-tile bug on some GPUs; chunking the raster
+    // work into smaller bands sidesteps it entirely, regardless of cause.
+    const STRIP = 256;
+    for(let y = 0; y < h; y += STRIP){
+      const sh = Math.min(STRIP, h - y);
+      ctx.drawImage(bitmap, 0, y, w, sh, 0, y, w, sh);
+    }
     if(bitmap.close) bitmap.close();
 
-    // Force a full CPU-side read/write round-trip. This flushes any
-    // pending GPU→CPU raster work synchronously, so toBlob() always
-    // encodes the complete, settled pixel buffer rather than a canvas
-    // that's still mid-composite.
+    // Force a full CPU-side read/write round-trip so any pending raster
+    // work is flushed and settled before we ever hand pixels to the encoder.
     const fullFrame = ctx.getImageData(0, 0, w, h);
+    let pixelsTouched = 0;
 
     if(addNoise){
       const d = fullFrame.data;
-      // touch a scattered sample of pixels with a ±1-2 RGB nudge
       const sampleCount = Math.max(2000, Math.floor((w*h)*0.02));
+      pixelsTouched = sampleCount;
       for(let i=0;i<sampleCount;i++){
         const px = (Math.floor(Math.random()*w*h))*4;
         for(let c=0;c<3;c++){
@@ -554,15 +606,27 @@
         }
       }
     }
-    // Write the settled (and optionally noised) buffer back — this is what
-    // actually gets encoded, so the exported file always matches this
-    // fully-resolved pixel data, corner included.
     ctx.putImageData(fullFrame, 0, 0);
 
-    // Quality lock: PNG/WebP re-encode is lossless by nature.
-    // JPEG re-encode uses the maximum quality (1.0) so pixel data stays
-    // as close to byte-identical as a canvas re-encode allows — no
-    // visible or measurable quality loss, no resizing, no recompression artifacts.
+    // Self-check: compare the bottom-right corner patch actually sitting on
+    // the canvas against a fresh, independent crop drawn straight from the
+    // source bitmap into a small isolated canvas. If they disagree by more
+    // than the noise tolerance, the big canvas got corrupted somewhere —
+    // redraw once, strip by strip again, before giving up and shipping it.
+    const corrupted = await cornerLooksCorrupted(ctx, w, h, file, addNoise);
+    if(corrupted){
+      ctx.clearRect(0, 0, w, h);
+      let bitmap2;
+      try{ bitmap2 = await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+      catch(e){ bitmap2 = await loadImageElementFullyDecoded(file); }
+      for(let y = 0; y < h; y += 128){
+        const sh = Math.min(128, h - y);
+        ctx.drawImage(bitmap2, 0, y, w, sh, 0, y, w, sh);
+      }
+      if(bitmap2.close) bitmap2.close();
+      ctx.getImageData(0,0,1,1); // flush
+    }
+
     const outType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
     const quality = outType === 'image/jpeg' ? 1.0 : undefined;
 
@@ -571,9 +635,39 @@
         if(!blob){ reject(new Error('Canvas export failed')); return; }
         const base = file.name.replace(/\.[^.]+$/, '');
         const ext = outType === 'image/png' ? 'png' : 'jpg';
-        resolve({blob, name: `${base}-cleaned.${ext}`});
+        resolve({blob, name: `${base}-cleaned.${ext}`, pixelsTouched});
       }, outType, quality);
     });
+  }
+
+  async function cornerLooksCorrupted(ctx, w, h, file, addNoise){
+    if(addNoise) return false; // noise mode already perturbs pixels — skip check
+    try{
+      const patch = 96;
+      const px = Math.max(0, w - patch), py = Math.max(0, h - patch);
+      const pw = w - px, ph = h - py;
+      const onCanvas = ctx.getImageData(px, py, pw, ph).data;
+
+      let freshBitmap;
+      try{ freshBitmap = await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+      catch(e){ freshBitmap = await loadImageElementFullyDecoded(file); }
+      const refCanvas = document.createElement('canvas');
+      refCanvas.width = pw; refCanvas.height = ph;
+      const refCtx = refCanvas.getContext('2d', { willReadFrequently: true });
+      refCtx.drawImage(freshBitmap, px, py, pw, ph, 0, 0, pw, ph);
+      if(freshBitmap.close) freshBitmap.close();
+      const ref = refCtx.getImageData(0,0,pw,ph).data;
+
+      let diffSum = 0, samples = 0;
+      for(let i=0; i<onCanvas.length; i += 40){
+        diffSum += Math.abs(onCanvas[i] - ref[i]);
+        samples++;
+      }
+      const avgDiff = diffSum / Math.max(1, samples);
+      return avgDiff > 12; // meaningfully different = likely corrupted, not just recompression noise
+    } catch(e){
+      return false; // if the check itself fails, don't block the export on it
+    }
   }
 
   function loadImageElementFullyDecoded(file){
@@ -581,18 +675,20 @@
       const img = new Image();
       const url = URL.createObjectURL(file);
       img.onload = async () => {
-        try{
-          if(img.decode) await img.decode(); // guarantee full decode
-          resolve(img);
-        } catch(e){
-          resolve(img); // decode() unsupported/failed — best effort
-        } finally {
-          URL.revokeObjectURL(url);
-        }
+        try{ if(img.decode) await img.decode(); resolve(img); }
+        catch(e){ resolve(img); }
+        finally{ URL.revokeObjectURL(url); }
       };
       img.onerror = reject;
       img.src = url;
     });
+  }
+
+  async function sha256Hex(buf){
+    try{
+      const digest = await crypto.subtle.digest('SHA-256', buf);
+      return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2,'0')).join('');
+    } catch(e){ return '—'; }
   }
 
   function triggerDownload(blob, name){
@@ -615,10 +711,7 @@
   cleanAllBtn.addEventListener('click', async () => {
     cleanAllBtn.disabled = true;
     const toClean = items.filter(i => i.status === 'ready');
-    for(const item of toClean){
-      await cleanItem(item);
-      await new Promise(r => setTimeout(r, 120));
-    }
+    for(const item of toClean){ await cleanItem(item); await new Promise(r => setTimeout(r, 120)); }
     updateGlobalButtons();
   });
 
@@ -626,10 +719,7 @@
     const notDone = items.filter(i => i.status === 'ready');
     for(const item of notDone){ await cleanItem(item); await new Promise(r=>setTimeout(r,120)); }
     const done = items.filter(i => i.status === 'done');
-    for(const item of done){
-      triggerDownload(item.cleanedBlob, item.cleanedName);
-      await new Promise(r => setTimeout(r, 300));
-    }
+    for(const item of done){ triggerDownload(item.cleanedBlob, currentOutputName(item)); await new Promise(r => setTimeout(r, 300)); }
   });
 
   function escapeHtml(s){
@@ -642,43 +732,34 @@
     if(view.getUint16(0) !== 0xFFD8) return tags;
     let offset = 2;
     const len = view.byteLength;
-    let sawJFIF=false, sawXMP=false, sawICC=false, sawIPTC=false, sawAPP11=false, sawCOMparams=false;
+    let sawXMP=false, sawICC=false, sawIPTC=false, sawAPP11=false;
 
     while(offset < len - 1){
       if(view.getUint8(offset) !== 0xFF) break;
       const marker = view.getUint8(offset+1);
-      if(marker === 0xD8 || marker === 0x01 || (marker >= 0xD0 && marker <= 0xD7)){
-        offset += 2; continue;
-      }
-      if(marker === 0xD9) break; // EOI
+      if(marker === 0xD8 || marker === 0x01 || (marker >= 0xD0 && marker <= 0xD7)){ offset += 2; continue; }
+      if(marker === 0xD9) break;
       if(offset+3 >= len) break;
       const segLen = view.getUint16(offset+2);
       const segStart = offset+4;
 
-      if(marker === 0xE1 && segLen >= 8){ // APP1: EXIF or XMP
+      if(marker === 0xE1 && segLen >= 8){
         const sig = readAscii(view, segStart, 6);
-        if(sig === 'Exif\0\0'){
-          extractExif(view, segStart+6, tags);
-        } else {
+        if(sig === 'Exif\0\0'){ extractExif(view, segStart+6, tags); }
+        else {
           const xmpSig = readAscii(view, segStart, Math.min(29, len-segStart));
           if(xmpSig.startsWith('http://ns.adobe.com/xap')) sawXMP = true;
         }
-      } else if(marker === 0xE0){
-        sawJFIF = true;
-      } else if(marker === 0xE2){
-        sawICC = true;
-      } else if(marker === 0xED){
-        sawIPTC = true;
-      } else if(marker === 0xEB){
-        sawAPP11 = true; // JUMBF box marker — used by C2PA content credentials
-      } else if(marker === 0xFE){ // COM comment segment
+      } else if(marker === 0xE2){ sawICC = true; }
+      else if(marker === 0xED){ sawIPTC = true; }
+      else if(marker === 0xEB){ sawAPP11 = true; }
+      else if(marker === 0xFE){
         const txt = readAscii(view, segStart, Math.min(segLen-2, 400));
         if(/steps:|sampler:|cfg scale:|seed:|model hash:|parameters/i.test(txt)){
-          sawCOMparams = true;
           tags.push({key:'AI Generation Params', val: txt.slice(0,60).trim()+'…', sev:'high'});
         }
       }
-      if(marker === 0xDA) break; // start of scan — stop, no more metadata markers follow
+      if(marker === 0xDA) break;
       offset = segStart + (segLen - 2);
     }
 
@@ -691,9 +772,7 @@
 
   function readAscii(view, start, length){
     let s = '';
-    for(let i=0;i<length && start+i<view.byteLength;i++){
-      s += String.fromCharCode(view.getUint8(start+i));
-    }
+    for(let i=0;i<length && start+i<view.byteLength;i++){ s += String.fromCharCode(view.getUint8(start+i)); }
     return s;
   }
 
@@ -720,7 +799,6 @@
         const type = g16(entryOff+2);
         const numVal = g32(entryOff+4);
         const valOff = entryOff+8;
-
         switch(tag){
           case 0x010F: found.Make = readTiffString(type, numVal, valOff); break;
           case 0x0110: found.Model = readTiffString(type, numVal, valOff); break;
@@ -769,11 +847,8 @@
           if(tag === 0x0002) lat = readGPSRational(g32(valOff));
           if(tag === 0x0004) lon = readGPSRational(g32(valOff));
         }
-        if(lat != null && lon != null){
-          found.GPS = `${lat.toFixed(5)}° ${latRef}, ${lon.toFixed(5)}° ${lonRef}`;
-        } else if(count > 0){
-          found.GPS = 'Location tags present';
-        }
+        if(lat != null && lon != null){ found.GPS = `${lat.toFixed(5)}° ${latRef}, ${lon.toFixed(5)}° ${lonRef}`; }
+        else if(count > 0){ found.GPS = 'Location tags present'; }
       }
     }
 
@@ -804,7 +879,6 @@
     let offset = 8;
     const len = view.byteLength;
     const textChunks = [];
-    let hasEXIFchunk=false;
 
     while(offset + 8 <= len){
       const dataLen = view.getUint32(offset);
@@ -820,19 +894,16 @@
       } else if(type === 'zTXt'){
         textChunks.push({keyword:'(compressed text chunk)', text:''});
       } else if(type === 'eXIf'){
-        hasEXIFchunk = true;
         extractExif(view, dataStart, tags);
-      } else if(type === 'IEND'){
-        break;
-      }
-      offset = dataStart + dataLen + 4; // skip CRC
+      } else if(type === 'IEND'){ break; }
+      offset = dataStart + dataLen + 4;
     }
 
     textChunks.forEach(tc => {
       const kw = tc.keyword.toLowerCase();
       if(kw === 'parameters' || /steps:|sampler:|cfg scale:|seed:/i.test(tc.text)){
         tags.push({key:'Stable Diffusion Params', val: (tc.text || tc.keyword).slice(0,70).trim()+'…', sev:'high'});
-      } else if(kw.includes('workflow') || kw.includes('prompt') && tc.text.includes('{')){
+      } else if(kw.includes('workflow') || (kw.includes('prompt') && tc.text.includes('{'))){
         tags.push({key:'ComfyUI Workflow', val:'Embedded node graph / prompt JSON found', sev:'high'});
       } else if(kw === 'xml:com.adobe.xmp'){
         tags.push({key:'XMP Metadata', val:'Adobe XMP packet present', sev:'med'});

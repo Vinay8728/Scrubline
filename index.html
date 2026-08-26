@@ -482,61 +482,100 @@
       await new Promise(r => setTimeout(r, item.tags.length*40 + 150));
     }
 
-    const {blob, name} = await reencodeImage(item.file, noiseOn);
-    item.cleanedBlob = blob;
-    item.cleanedName = name;
-    item.status = 'done';
+    try{
+      const {blob, name} = await reencodeImage(item.file, noiseOn);
+      item.cleanedBlob = blob;
+      item.cleanedName = name;
+      item.status = 'done';
 
-    pill.textContent = 'Cleaned';
-    pill.className = 'status-pill done';
-    cleanBtn.disabled = false;
-    cleanBtn.textContent = 'Download clean file';
-    const stamp = card.querySelector('.clean-stamp');
-    if(stamp) stamp.classList.add('show');
+      pill.textContent = 'Cleaned';
+      pill.className = 'status-pill done';
+      cleanBtn.disabled = false;
+      cleanBtn.textContent = 'Download clean file';
+      const stamp = card.querySelector('.clean-stamp');
+      if(stamp) stamp.classList.add('show');
 
-    triggerDownload(blob, name);
+      triggerDownload(blob, name);
+    } catch(err){
+      pill.textContent = 'Failed';
+      pill.className = 'status-pill found';
+      cleanBtn.disabled = false;
+      cleanBtn.textContent = 'Retry clean & download';
+      cleanBtn.title = 'Something went wrong re-encoding this image — click to retry.';
+    }
     updateGlobalButtons();
   }
 
-  function reencodeImage(file, addNoise){
+  async function reencodeImage(file, addNoise){
+    // createImageBitmap fully decodes the image before resolving (unlike an
+    // <img> element's onload, which can fire before every tile/row of a
+    // large JPEG has finished decoding). That partial-decode race is what
+    // was leaving an undecoded/placeholder patch in a corner of some
+    // exports. createImageBitmap avoids it and needs no object-URL cleanup.
+    let bitmap;
+    try{
+      bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    } catch(e){
+      // Fallback path for any browser without createImageBitmap support —
+      // wait for a full decode() before drawing, for the same reason.
+      bitmap = await loadImageElementFullyDecoded(file);
+    }
+
+    const w = bitmap.width, h = bitmap.height;
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d', { alpha: true });
+    ctx.imageSmoothingEnabled = false; // no resampling — pixels drawn 1:1
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    if(bitmap.close) bitmap.close();
+
+    if(addNoise){
+      const imgData = ctx.getImageData(0,0,w,h);
+      const d = imgData.data;
+      // touch a scattered sample of pixels with a ±1-2 RGB nudge
+      const sampleCount = Math.max(2000, Math.floor((w*h)*0.02));
+      for(let i=0;i<sampleCount;i++){
+        const px = (Math.floor(Math.random()*w*h))*4;
+        for(let c=0;c<3;c++){
+          const delta = (Math.random()<0.5?-1:1) * (Math.random()<0.3?2:1);
+          d[px+c] = Math.min(255, Math.max(0, d[px+c] + delta));
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
+    }
+
+    // Quality lock: PNG/WebP re-encode is lossless by nature.
+    // JPEG re-encode uses the maximum quality (1.0) so pixel data stays
+    // as close to byte-identical as a canvas re-encode allows — no
+    // visible or measurable quality loss, no resizing, no recompression artifacts.
+    const outType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+    const quality = outType === 'image/jpeg' ? 1.0 : undefined;
+
+    return new Promise((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if(!blob){ reject(new Error('Canvas export failed')); return; }
+        const base = file.name.replace(/\.[^.]+$/, '');
+        const ext = outType === 'image/png' ? 'png' : 'jpg';
+        resolve({blob, name: `${base}-cleaned.${ext}`});
+      }, outType, quality);
+    });
+  }
+
+  function loadImageElementFullyDecoded(file){
     return new Promise((resolve, reject) => {
       const img = new Image();
       const url = URL.createObjectURL(file);
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-
-        if(addNoise){
-          const w = canvas.width, h = canvas.height;
-          const imgData = ctx.getImageData(0,0,w,h);
-          const d = imgData.data;
-          // touch a scattered sample of pixels with a ±1-2 RGB nudge
-          const sampleCount = Math.max(2000, Math.floor((w*h)*0.02));
-          for(let i=0;i<sampleCount;i++){
-            const px = (Math.floor(Math.random()*w*h))*4;
-            for(let c=0;c<3;c++){
-              const delta = (Math.random()<0.5?-1:1) * (Math.random()<0.3?2:1);
-              d[px+c] = Math.min(255, Math.max(0, d[px+c] + delta));
-            }
-          }
-          ctx.putImageData(imgData, 0, 0);
-        }
-
-        // Quality lock: PNG/WebP re-encode is lossless by nature.
-        // JPEG re-encode uses the maximum quality (1.0) so pixel data stays
-        // as close to byte-identical as a canvas re-encode allows — no
-        // visible or measurable quality loss, no resizing, no recompression artifacts.
-        const outType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-        const quality = outType === 'image/jpeg' ? 1.0 : undefined;
-        canvas.toBlob((blob) => {
+      img.onload = async () => {
+        try{
+          if(img.decode) await img.decode(); // guarantee full decode
+          resolve(img);
+        } catch(e){
+          resolve(img); // decode() unsupported/failed — best effort
+        } finally {
           URL.revokeObjectURL(url);
-          const base = file.name.replace(/\.[^.]+$/, '');
-          const ext = outType === 'image/png' ? 'png' : 'jpg';
-          resolve({blob, name: `${base}-cleaned.${ext}`});
-        }, outType, quality);
+        }
       };
       img.onerror = reject;
       img.src = url;
